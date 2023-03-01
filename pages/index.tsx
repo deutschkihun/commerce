@@ -1,11 +1,52 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
+import styles from '../styles/Home.module.css'
+import { useEffect, useRef, useState } from 'react'
+import { css } from '@emotion/react'
+import Button from '@components/Button'
 
 const inter = Inter({ subsets: ['latin'] })
 
+//interface ItemInfo {
+//  id: string
+//  properties: {
+//    id: string
+//  }[]
+//}
+
+interface ProductsInfo {
+  id: string
+  name: string
+  createdAt: string
+}
+
 export default function Home() {
+  // notion
+  //const [products, setProducts] = useState<ItemInfo[]>([])
+  //useEffect(() => {
+  //  fetch('/api/get-item')
+  //    .then((res) => res.json())
+  //    .then((data) => setProducts(data.items))
+  //}, [])
+
+  const [products, setProducts] = useState<ProductsInfo[]>([])
+  useEffect(() => {
+    fetch('/api/get-products')
+      .then((res) => res.json())
+      .then((data) => setProducts(data.items))
+  }, [])
+
+  const inputRef = useRef<HTMLInputElement>(null)
+  const handleClick = async () => {
+    if (inputRef.current?.value === '' || !inputRef.current)
+      alert('please insert name')
+
+    fetch(`api/addItem?name=${inputRef.current?.value}`)
+      .then((res) => res.json())
+      .then((data) => alert(data.message))
+  }
+
   return (
     <>
       <Head>
@@ -38,84 +79,49 @@ export default function Home() {
             </a>
           </div>
         </div>
+        <input
+          ref={inputRef}
+          className="placeholder:italic placeholder:text-slate-400 block bg-white border border-slate-300 rounded-md py-2 pl-3 pr-3 shadow-sm focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm w-96"
+          placeholder="Search for anything..."
+          type="text"
+          name="search"
+        />
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
-          </div>
-        </div>
+        <Button onClick={handleClick}>add item</Button>
 
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
+        <div>
+          <h2 className={inter.className}>product list</h2>
+          {/* real db */}
+          {products &&
+            products.map((product) => (
+              <div key={product.id}>
+                <span>
+                  {product.name}: {product.createdAt}
+                </span>
+              </div>
+            ))}
 
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
+          {/* notion */}
+          {/*{products &&
+            products.map((item) => (
+              <div key={item.id}>
+                {JSON.stringify(item)}
+                {Object.entries(item.properties).map(([key, value]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      fetch(
+                        `api/get-detail?pageId=${item.id}&propertyId=${value.id}`
+                      )
+                        .then((res) => res.json())
+                        .then((data) => alert(JSON.stringify(data.detail)))
+                    }}
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+            ))}*/}
         </div>
       </main>
     </>
